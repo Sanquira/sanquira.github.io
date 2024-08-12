@@ -160,7 +160,7 @@
         new Weapon('Obušek', 1, 3, -2, -2),
         new Weapon('Palcát', 1, 3, 1, -1),
 
-        new Weapon('Šavle', 1.5, 4, 2, 2),
+        new Weapon('Šavle', 1.5, 4, 2, 1),
         new Weapon('Široký meč', 2, 5, 0, 0),
         new Weapon('Sekera', 2, 3, 1, -1),
         new Weapon('Kyj', 2, 3, 2, -1),
@@ -315,6 +315,10 @@
                     SZBonus = -2;
                     UCBonus = -1;
                     OZBonus = 4;
+                } else if (getWeightCategory(weapon1.weight) === 'Střední' && getWeightCategory(weapon2.weight) === 'Střední') {
+                    SZBonus = 0;
+                    UCBonus = -6;
+                    OZBonus = 1;
                 }
 
                 // Check for race bonus
