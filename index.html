@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Výběr zbraně, rasy a povolání</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .row {
+            display: flex;
+            flex: 1;
+        }
+
+        .column {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        select {
+            width: 80%;
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stats {
+            width: 80%;
+            text-align: left;
+        }
+
+        .result-area {
+            flex: 1;
+            padding: 20px;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+        }
+
+        .character-selection {
+            background-color: #e6e6e6;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .weapons-selection {
+            border-top: 2px solid #ccc;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="character-selection">
+        <div class="row">
+            <div class="column">
+                <h3>Rasa</h3>
+                <select id="race-dropdown"></select>
+                <div id="race-info" class="stats"></div>
+            </div>
+            <div class="column">
+                <h3>Povolání</h3>
+                <select id="class-dropdown"></select>
+                <div id="class-info" class="stats"></div>
+            </div>
+        </div>
+    </div>
+    <div class="weapons-selection">
+        <div class="row">
+            <div class="column">
+                <h3>Zbraň 1</h3>
+                <select id="dropdown1"></select>
+                <div class="row" style="width: 80%">
+                    <div class="column"><label>Nabroušení: <input id="attk11" type="checkbox" checked></label></div>
+                    <div class="column"><label>Vyvážení: <input id="attk12" type="checkbox" checked></label></div>
+                </div>
+                <div id="stats1" class="stats"></div>
+            </div>
+            <div class="column">
+                <h3>Zbraň 2</h3>
+                <select id="dropdown2"></select>
+                <div class="row" style="width: 80%">
+                    <div class="column"><label>Nabroušení: <input id="attk21" type="checkbox" checked></label></div>
+                    <div class="column"><label>Vyvážení: <input id="attk22" type="checkbox" checked></label></div>
+                </div>
+                <div id="stats2" class="stats"></div>
+            </div>
+        </div>
+    </div>
+    <div class="result-area">
+        <div>
+            <div><h3>Výsledek:</h3></div>
+            <div id="result">
+                Výsledek bude zobrazen zde
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    class Weapon {
+        constructor(name, weight, SZ, UC, OZ) {
+            this.name = name;
+            this.weight = weight;
+            this.SZ = SZ;
+            this.UC = UC;
+            this.OZ = OZ;
+        }
+
+
+    }
+
+    class Race {
+        constructor(name, bonusWeapon) {
+            this.name = name;
+            this.bonusWeapon = bonusWeapon;
+        }
+    }
+
+    class CharacterClass {
+        constructor(name, maxWeightAllowed) {
+            this.name = name;
+            this.maxWeightAllowed = maxWeightAllowed;
+        }
+
+        getMaxWeightDescription() {
+            switch (this.maxWeightAllowed) {
+                case 'Lehká':
+                    return 'Lehké zbraně';
+                case 'Střední':
+                    return 'Střední zbraně';
+                case 'Těžká':
+                    return 'Těžké zbraně';
+                default:
+                    return 'Neznámé';
+            }
+        }
+    }
+
+    const weapons = [
+        new Weapon('Dýka', 0.5, 2, 0, -2),
+        new Weapon('Tesák', 1, 3, -1, -2),
+        new Weapon('Krátký meč', 1, 4, -1, -1),
+        new Weapon('Obušek', 1, 3, -2, -2),
+        new Weapon('Palcát', 1, 3, 1, -1),
+
+        new Weapon('Šavle', 1.5, 4, 2, 2),
+        new Weapon('Široký meč', 2, 5, 0, 0),
+        new Weapon('Sekera', 2, 3, 1, -1),
+        new Weapon('Kyj', 2, 3, 2, -1),
+
+        // new Weapon('Meč bastard', 3, 6, 0, 1),
+        // new Weapon('Dlouhý meč', 3, 7, -1, 0),
+        // new Weapon('Válečné kladivo', 3, 5, 2, -1),
+        // new Weapon('Řemdih', 3, 4, 3, -2),
+
+    ];
+
+    const races = [
+        new Race('Hobit', 'Lehká kuše'),
+        new Race('Kudůk', 'Sekera'),
+        new Race('Trpaslík', 'Válečná sekera'),
+        new Race('Elf', 'Dlouhý luk'),
+        new Race('Člověk', 'Široký meč'),
+        new Race('Barbar', 'Meč bastard'),
+        new Race('Kroll', 'Težký kyj')
+    ];
+
+    const classes = [
+        new CharacterClass('Alchymista', 'Střední'),
+        new CharacterClass('Bojovník', 'Těžká'),
+        new CharacterClass('Mág', 'Lehká'),
+        new CharacterClass('Hraničář', 'Střední'),
+        new CharacterClass('Zloděj', 'Střední'),
+    ];
+
+    const dropdown1 = document.getElementById('dropdown1');
+    const dropdown2 = document.getElementById('dropdown2');
+    const attk11 = document.getElementById('attk11');
+    const attk12 = document.getElementById('attk12');
+    const attk21 = document.getElementById('attk21');
+    const attk22 = document.getElementById('attk22');
+    const stats1 = document.getElementById('stats1');
+    const stats2 = document.getElementById('stats2');
+    const raceDropdown = document.getElementById('race-dropdown');
+    const classDropdown = document.getElementById('class-dropdown');
+    const raceInfo = document.getElementById('race-info');
+    const classInfo = document.getElementById('class-info');
+    const result = document.getElementById('result');
+
+    function populateDropdowns() {
+        [dropdown1, dropdown2].forEach(dropdown => {
+            dropdown.innerHTML = '<option value="">Vyberte zbraň</option>';
+            weapons.forEach((weapon, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = weapon.name;
+                dropdown.appendChild(option);
+            });
+        });
+
+        raceDropdown.innerHTML = '<option value="">Vyberte rasu</option>';
+        races.forEach((race, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = race.name;
+            raceDropdown.appendChild(option);
+        });
+
+        classDropdown.innerHTML = '<option value="">Vyberte povolání</option>';
+        classes.forEach((characterClass, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = characterClass.name;
+            classDropdown.appendChild(option);
+        });
+    }
+
+    function getWeightCategory(weight) {
+        if (weight > 0 && weight <= 1) return 'Lehká';
+        if (weight > 1 && weight <= 2) return 'Střední';
+        if (weight > 2 && weight <= 3) return 'Těžká';
+        return 'Neznámá';
+    }
+
+    function displayWeaponStats(weapon, statsElement, attk1, attk2) {
+        let attkBonus = 0;
+        if (attk1 && attk1.checked) {
+            attkBonus += 1;
+        }
+        if (attk2 && attk2.checked) {
+            attkBonus += 1;
+        }
+        statsElement.innerHTML = `
+                <p><strong>Váha:</strong> ${weapon ? getWeightCategory(weapon.weight) : '0'}</p>
+                <p><strong>SZ:</strong> ${weapon ? weapon.SZ : '0'}</p>
+                <p><strong>UC:</strong> ${weapon ? weapon.UC + attkBonus : '0'}</p>
+                <p><strong>OZ:</strong> ${weapon ? weapon.OZ : '0'}</p>
+            `;
+    }
+
+    function updateStats(dropdown, statsElement, attk1, attk2) {
+        const selectedWeapon = weapons[dropdown.value] || null;
+        displayWeaponStats(selectedWeapon, statsElement, attk1, attk2);
+    }
+
+    function updateRaceInfo() {
+        const selectedRace = races[raceDropdown.value];
+        raceInfo.innerHTML = `<p><strong>Rodová zbraň:</strong> ${selectedRace ? selectedRace.bonusWeapon : '-'}</p>`;
+    }
+
+    function updateClassInfo() {
+        const selectedClass = classes[classDropdown.value];
+        classInfo.innerHTML = `<p><strong>Max. povolená váha zbraně:</strong> ${selectedClass ? selectedClass.getMaxWeightDescription() : '-'}</p>`;
+    }
+
+    function updateResult() {
+        const weapon1 = weapons[dropdown1.value];
+        const weapon2 = weapons[dropdown2.value];
+        const selectedRace = races[raceDropdown.value];
+        const selectedClass = classes[classDropdown.value];
+        let attkBonus = 0;
+        if (attk11.checked) {
+            attkBonus += 1;
+        }
+        if (attk12.checked) {
+            attkBonus += 1;
+        }
+        if (attk21.checked) {
+            attkBonus += 1;
+        }
+        if (attk22.checked) {
+            attkBonus += 1;
+        }
+
+        let resultHTML = '';
+
+        if (weapon1 && weapon2 && selectedClass) {
+            const totalWeight = weapon1.weight + weapon2.weight;
+            const maxAllowedWeight = selectedClass.maxWeightAllowed === 'Těžká' ? 3 :
+                selectedClass.maxWeightAllowed === 'Střední' ? 2 : 1;
+
+            if (totalWeight > 3) {
+                resultHTML += '<p>Tato kombinace není povolená.</p>';
+            } else if (totalWeight > maxAllowedWeight) {
+                resultHTML += '<p>Tato kombinace je na tebe příliš těžká.</p>';
+            } else {
+                // Calculate bonuses
+                let SZBonus = 0;
+                let UCBonus = 0;
+                let OZBonus = 0;
+
+                if (getWeightCategory(weapon1.weight) === 'Lehká' && getWeightCategory(weapon2.weight) === 'Lehká') {
+                    SZBonus = -1;
+                    UCBonus = 1;
+                    OZBonus = 6;
+                } else if ((getWeightCategory(weapon1.weight) === 'Lehká' && getWeightCategory(weapon2.weight) === 'Střední') ||
+                    (getWeightCategory(weapon1.weight) === 'Střední' && getWeightCategory(weapon2.weight) === 'Lehká')) {
+                    SZBonus = -2;
+                    UCBonus = -1;
+                    OZBonus = 4;
+                }
+
+                // Check for race bonus
+                if ((selectedRace && selectedRace.bonusWeapon === weapon1.name) ||
+                    (selectedRace && selectedRace.bonusWeapon === weapon2.name)) {
+                    SZBonus += 1;
+                }
+
+                // Calculate total attributes
+                const totalSZ = weapon1.SZ + weapon2.SZ + SZBonus;
+                const totalUC = weapon1.UC + weapon2.UC + UCBonus + attkBonus;
+                const totalOZ = weapon1.OZ + weapon2.OZ + OZBonus;
+
+                resultHTML += `
+                    <p><strong>Váha:</strong> ${getWeightCategory(totalWeight)}</p>
+                    <p><strong>SZ:</strong> ${totalSZ}</p>
+                    <p><strong>UC:</strong> ${totalUC}</p>
+                    <p><strong>OZ:</strong> ${totalOZ}</p>
+                `;
+
+
+                if (selectedRace && (selectedRace.bonusWeapon === weapon1.name || selectedRace.bonusWeapon === weapon2.name)) {
+                    resultHTML += '<p>Aplikován rasový bonus (+1 k SZ).</p>';
+                }
+            }
+        } else {
+            resultHTML += '<p>Prosím vyberte obě zbraně, rasu a povolání pro vyhodnocení.</p>';
+        }
+
+        result.innerHTML = resultHTML;
+    }
+
+    populateDropdowns();
+    displayWeaponStats(null, stats1, attk11, attk12);
+    displayWeaponStats(null, stats2, attk21, attk22);
+    updateRaceInfo();
+    updateClassInfo();
+
+    dropdown1.addEventListener('change', () => {
+        updateStats(dropdown1, stats1, attk11, attk12);
+        updateResult();
+    });
+    dropdown2.addEventListener('change', () => {
+        updateStats(dropdown2, stats2, attk21, attk22);
+        updateResult();
+    });
+    raceDropdown.addEventListener('change', () => {
+        updateRaceInfo();
+        updateResult();
+    });
+    classDropdown.addEventListener('change', () => {
+        updateClassInfo();
+        updateResult();
+    });
+    attk11.addEventListener('change', () => {
+        updateStats(dropdown1, stats1, attk11, attk12);
+        updateResult();
+    });
+    attk12.addEventListener('change', () => {
+        updateStats(dropdown1, stats1, attk11, attk12);
+        updateResult();
+    });
+    attk21.addEventListener('change', () => {
+        updateStats(dropdown2, stats2, attk21, attk22);
+        updateResult();
+    });
+    attk22.addEventListener('change', () => {
+        updateStats(dropdown2, stats2, attk21, attk22);
+        updateResult();
+    });
+
+</script>
+</body>
+</html>
